@@ -5,6 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const citySearchInput = document.getElementById('city-search-input');
     const addClockButton = document.getElementById('add-clock-button');
     const citySuggestions = document.getElementById('city-suggestions');
+    const globeViewButton = document.getElementById('globe-view-button');
+    const globeContainer = document.getElementById('globe-container');
+    const clockListWrapper = document.querySelector('.clock-list-wrapper');
+    let globe;
 
     // --- STATE MANAGEMENT ---
     let activeClocks = [];
@@ -29,12 +33,14 @@ document.addEventListener('DOMContentLoaded', () => {
         activeClocks.push(timezone);
         saveClocks();
         renderClocks();
+        updateGlobeMarkers();
     }
 
     function removeClock(timezone) {
         activeClocks = activeClocks.filter(tz => tz !== timezone);
         saveClocks();
         renderClocks();
+        updateGlobeMarkers();
     }
 
     async function fetchAndDisplayHolidays(timezone) {
@@ -176,6 +182,66 @@ document.addEventListener('DOMContentLoaded', () => {
         themeSwitcher.addEventListener('change', () => setTheme(themeSwitcher.checked ? 'dark' : 'light'));
     }
 
+    function initGlobe() {
+        return new Promise(resolve => {
+            globe = Globe()
+                (globeContainer)
+                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
+                .pointOfView({ altitude: 2.5 }, 5000)
+                .polygonCapColor(() => 'rgba(200, 200, 200, 0.7)')
+                .polygonSideColor(() => 'rgba(255, 255, 255, 0.1)')
+                .polygonStrokeColor(() => '#111')
+                .onGlobeReady(resolve);
+        });
+    }
+
+    async function updateGlobeMarkers() {
+        if (!globe) return;
+
+        const markerData = await Promise.all(activeClocks.map(async (tz) => {
+            try {
+                const cityName = tz.split('/').pop().replace(/_/g, ' ');
+                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`);
+                const geoData = await geoResponse.json();
+                if (!geoData.results) return null;
+                const { latitude, longitude } = geoData.results[0];
+                return {
+                    lat: latitude,
+                    lng: longitude,
+                    label: `${cityName} (${moment().tz(tz).format('h:mm A')})`,
+                    size: 0.5,
+                    color: 'red'
+                };
+            } catch (error) {
+                console.error(`Could not get coordinates for ${tz}`, error);
+                return null;
+            }
+        }));
+
+        globe.pointsData(markerData.filter(d => d));
+    }
+
+    async function toggleGlobeView() {
+        if (globeContainer.classList.contains('hidden')) {
+            globeContainer.classList.remove('hidden');
+            clockListWrapper.classList.add('hidden');
+            globeViewButton.textContent = 'List View';
+            if (!globe) {
+                try {
+                    await initGlobe();
+                    updateGlobeMarkers();
+                } catch (error) {
+                    console.error("Failed to initialize globe:", error);
+                    globeContainer.innerHTML = '<p class="error-message">Could not load 3D globe. Please ensure your browser supports WebGL.</p>';
+                }
+            }
+        } else {
+            globeContainer.classList.add('hidden');
+            clockListWrapper.classList.remove('hidden');
+            globeViewButton.textContent = 'Globe View';
+        }
+    }
+
     function init() {
         initTheme();
         populateSuggestions();
@@ -201,6 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 holidayModal.classList.add('hidden');
             }
         });
+
+        globeViewButton.addEventListener('click', toggleGlobeView);
 
         clockUpdateInterval = setInterval(updateAllClockDisplays, 1000);
     }
