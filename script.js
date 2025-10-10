@@ -38,32 +38,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function fetchAndDisplayHolidays(timezone) {
-        const timezoneId = timezone.replace(/[^a-zA-Z0-9]/g, '-');
-        const holidayListContainer = document.getElementById(`holiday-list-${timezoneId}`);
         const countryCode = moment.tz.zone(timezone)?.countries()[0];
+        const modal = document.getElementById('holiday-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
 
         if (!countryCode) {
-            holidayListContainer.innerHTML = '<p>Holiday data not available for this location.</p>';
-            holidayListContainer.classList.toggle('hidden');
+            modalTitle.innerText = 'Error';
+            modalBody.innerHTML = '<p>Holiday data not available for this location.</p>';
+            modal.classList.remove('hidden');
             return;
         }
 
-        if (holidayListContainer.innerHTML !== '' && !holidayListContainer.classList.contains('hidden')) {
-            holidayListContainer.classList.add('hidden');
-            return;
-        }
+        modalTitle.innerText = `Public Holidays in ${timezone.split('/')[0].replace(/_/g, ' ')}`;
+        modalBody.innerHTML = '<p>Loading holidays...</p>';
+        modal.classList.remove('hidden');
 
         try {
-            holidayListContainer.innerHTML = '<p>Loading holidays...</p>';
-            holidayListContainer.classList.remove('hidden');
-
             const year = new Date().getFullYear();
             const apiKey = 'VTjPTMBTunsj3E3JpHAgFGXL5thPX9FV';
             const response = await fetch(`https://calendarific.com/api/v2/holidays?api_key=${apiKey}&country=${countryCode}&year=${year}`);
             const data = await response.json();
 
-            if (data.response.holidays.length === 0) {
-                holidayListContainer.innerHTML = '<p>No public holidays found for this year.</p>';
+            if (!data.response || !data.response.holidays || data.response.holidays.length === 0) {
+                modalBody.innerHTML = '<p>No public holidays found for this year.</p>';
                 return;
             }
 
@@ -72,11 +70,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 holidayHTML += `<li><strong>${moment(holiday.date.iso).format('MMM D')}:</strong> ${holiday.name}</li>`;
             });
             holidayHTML += '</ul>';
-            holidayListContainer.innerHTML = holidayHTML;
+            modalBody.innerHTML = holidayHTML;
 
         } catch (error) {
             console.error(`Failed to fetch holidays for ${countryCode}:`, error);
-            holidayListContainer.innerHTML = '<p>Could not load holiday data.</p>';
+            modalBody.innerHTML = '<p>Could not load holiday data.</p>';
         }
     }
 
@@ -94,20 +92,21 @@ document.addEventListener('DOMContentLoaded', () => {
             clockElement.className = 'clock';
             clockElement.dataset.timezone = timezone;
             clockElement.innerHTML = `
-                <button class="remove-clock-button" title="Remove Clock">&times;</button>
-                <div class="country-header">
+                <div class="clock-info">
                     <img src="https://flagsapi.com/${countryCode.toUpperCase()}/shiny/32.png" alt="" class="flag">
-                    <h2>${displayName}</h2>
+                    <div>
+                        <h2 class="city-name">${displayName}</h2>
+                        <p class="country-name">${timezone.split('/')[0].replace(/_/g, ' ')}</p>
+                    </div>
+                </div>
+                <div class="time-details">
+                    <p class="time" id="digital-time-${timezoneId}"></p>
+                    <p class="date" id="digital-date-${timezoneId}"></p>
+                </div>
+                <div class="actions">
                     <button class="holiday-button" title="View Holidays">📅</button>
-                    <span id="day-night-${timezoneId}" class="day-night-icon"></span>
+                    <button class="remove-clock-button" title="Remove Clock">&times;</button>
                 </div>
-                <canvas id="analog-${timezoneId}" class="analog-clock" width="150" height="150"></canvas>
-                <div id="digital-time-${timezoneId}" class="time"></div>
-                <div class="date-tz-container">
-                    <span id="digital-date-${timezoneId}" class="date"></span>
-                    <span id="timezone-${timezoneId}" class="timezone"></span>
-                </div>
-                <div class="holiday-list-container hidden" id="holiday-list-${timezoneId}"></div>
             `;
             clockContainer.appendChild(clockElement);
         });
@@ -122,12 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!digitalTimeEl) return;
             digitalTimeEl.innerText = momentDate.format('h:mm:ss A');
             document.getElementById(`digital-date-${timezoneId}`).innerText = momentDate.format('dddd, MMMM D, YYYY');
-            document.getElementById(`timezone-${timezoneId}`).innerText = momentDate.format('z');
-            const localHour = momentDate.hour();
-            const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="day-icon"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
-            const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="night-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
-            document.getElementById(`day-night-${timezoneId}`).innerHTML = (localHour >= 6 && localHour < 18) ? sunIcon : moonIcon;
-            drawAnalogClock(document.getElementById(`analog-${timezoneId}`), momentDate);
         });
     }
 
@@ -191,15 +184,24 @@ document.addEventListener('DOMContentLoaded', () => {
         addClockButton.addEventListener('click', () => { addClock(citySearchInput.value); citySearchInput.value = ''; });
         citySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { addClock(citySearchInput.value); citySearchInput.value = ''; } });
         clockContainer.addEventListener('click', (e) => {
-            if (e.target.classList.contains('remove-clock-button')) {
-                const clockElement = e.target.closest('.clock');
+            const clockElement = e.target.closest('.clock');
+            if (!clockElement) return;
+
+            if (e.target.closest('.remove-clock-button')) {
                 removeClock(clockElement.dataset.timezone);
             }
-            if (e.target.classList.contains('holiday-button')) {
-                const clockElement = e.target.closest('.clock');
+            if (e.target.closest('.holiday-button')) {
                 fetchAndDisplayHolidays(clockElement.dataset.timezone);
             }
         });
+
+        const holidayModal = document.getElementById('holiday-modal');
+        holidayModal.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay') || e.target.closest('.modal-close-button')) {
+                holidayModal.classList.add('hidden');
+            }
+        });
+
         clockUpdateInterval = setInterval(updateAllClockDisplays, 1000);
     }
 
