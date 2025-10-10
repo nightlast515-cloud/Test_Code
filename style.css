@@ -16,6 +16,10 @@
     --analog-center-dot: #333;
     --analog-number-color: #333;
     --analog-hand-color: #333;
+    --timeline-bg: #e0e0e0;
+    --market-open-bg: #c8e6c9; /* Light Green */
+    --market-closed-color: #e57373; /* Light Red */
+    --market-open-color: #2e7d32; /* Dark Green */
 }
 
 [data-theme="dark"] {
@@ -36,6 +40,10 @@
     --analog-center-dot: #e0e0e0;
     --analog-number-color: #e0e0e0;
     --analog-hand-color: #e0e0e0;
+    --timeline-bg: #424242;
+    --market-open-bg: #2c5b2e;
+    --market-closed-color: #ef9a9a;
+    --market-open-color: #a5d6a7;
 }
 
 body {
@@ -274,4 +282,48 @@ h1 {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/* Activity Timeline and Market Status Styles */
+.activity-timeline-container {
+    position: relative;
+    width: 100%;
+    height: 10px;
+    background-color: var(--timeline-bg);
+    border-radius: 5px;
+    margin-top: 15px;
+    overflow: hidden;
+}
+
+.activity-timeline-bar {
+    position: absolute;
+    height: 100%;
+    background-color: var(--market-open-bg);
+    border-radius: 5px;
+}
+
+.current-time-marker {
+    position: absolute;
+    top: -2px;
+    width: 4px;
+    height: 14px;
+    background-color: var(--accent-color);
+    border-radius: 2px;
+    transform: translateX(-50%); /* Center the marker */
+    z-index: 2;
+}
+
+.market-status {
+    margin-top: 10px;
+    font-size: 0.9em;
+    font-weight: 600;
+    height: 20px; /* Reserve space to prevent layout shift */
+}
+
+.market-status.open {
+    color: var(--market-open-color);
+}
+
+.market-status.closed {
+    color: var(--market-closed-color);
 }
