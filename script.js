@@ -10,35 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     let activeClocks = [];
     let clockUpdateInterval = null;
 
-    // --- WEATHER INTEGRATION ---
-    const weatherIconMap = {
-        0: '☀️', 1: '🌤️', 2: '⛅️', 3: '☁️', 45: '🌫️', 48: '🌫️',
-        51: '🌦️', 53: '🌦️', 55: '🌦️', 61: '🌧️', 63: '🌧️', 65: '🌧️',
-        80: '🌧️', 81: '🌧️', 82: '🌧️', 95: '⛈️', 96: '⛈️', 99: '⛈️',
-    };
-
-    async function fetchWeatherForTimezone(timezone) {
-        try {
-            const cityName = timezone.split('/').pop().replace(/_/g, ' ');
-            const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`);
-            const geoData = await geoResponse.json();
-            if (!geoData.results) throw new Error('Location not found.');
-
-            const { latitude, longitude } = geoData.results[0];
-            const weatherResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,weather_code&temperature_unit=celsius`);
-            const weatherData = await weatherResponse.json();
-
-            const timezoneId = timezone.replace(/[^a-zA-Z0-9]/g, '-');
-            const weatherContainer = document.getElementById(`weather-${timezoneId}`);
-            if (weatherContainer) {
-                weatherContainer.querySelector('.weather-icon').textContent = weatherIconMap[weatherData.current.weather_code] || '🌡️';
-                weatherContainer.querySelector('.weather-temp').textContent = `${Math.round(weatherData.current.temperature_2m)}°C`;
-            }
-        } catch (error) {
-            console.error(`Failed to fetch weather for ${timezone}:`, error);
-        }
-    }
-
     // --- CORE FUNCTIONS ---
     function loadClocks() {
         const savedClocks = JSON.parse(localStorage.getItem('activeClocks'));
@@ -77,9 +48,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Toggle visibility if already populated
-        if (holidayListContainer.innerHTML !== '') {
-            holidayListContainer.classList.toggle('hidden');
+        if (holidayListContainer.innerHTML !== '' && !holidayListContainer.classList.contains('hidden')) {
+            holidayListContainer.classList.add('hidden');
             return;
         }
 
@@ -88,17 +58,18 @@ document.addEventListener('DOMContentLoaded', () => {
             holidayListContainer.classList.remove('hidden');
 
             const year = new Date().getFullYear();
-            const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`);
-            const holidays = await response.json();
+            const apiKey = 'VTjPTMBTunsj3E3JpHAgFGXL5thPX9FV';
+            const response = await fetch(`https://calendarific.com/api/v2/holidays?api_key=${apiKey}&country=${countryCode}&year=${year}`);
+            const data = await response.json();
 
-            if (holidays.length === 0) {
+            if (data.response.holidays.length === 0) {
                 holidayListContainer.innerHTML = '<p>No public holidays found for this year.</p>';
                 return;
             }
 
             let holidayHTML = '<ul>';
-            holidays.forEach(holiday => {
-                holidayHTML += `<li><strong>${moment(holiday.date).format('MMM D')}:</strong> ${holiday.name}</li>`;
+            data.response.holidays.forEach(holiday => {
+                holidayHTML += `<li><strong>${moment(holiday.date.iso).format('MMM D')}:</strong> ${holiday.name}</li>`;
             });
             holidayHTML += '</ul>';
             holidayListContainer.innerHTML = holidayHTML;
@@ -127,9 +98,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="country-header">
                     <img src="https://flagsapi.com/${countryCode.toUpperCase()}/shiny/32.png" alt="" class="flag">
                     <h2>${displayName}</h2>
-                    <div class="weather-container" id="weather-${timezoneId}">
-                        <span class="weather-icon"></span><span class="weather-temp"></span>
-                    </div>
                     <button class="holiday-button" title="View Holidays">📅</button>
                     <span id="day-night-${timezoneId}" class="day-night-icon"></span>
                 </div>
@@ -143,7 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
             clockContainer.appendChild(clockElement);
         });
-        activeClocks.forEach(fetchWeatherForTimezone);
         updateAllClockDisplays();
     }
 
@@ -216,25 +183,11 @@ document.addEventListener('DOMContentLoaded', () => {
         themeSwitcher.addEventListener('change', () => setTheme(themeSwitcher.checked ? 'dark' : 'light'));
     }
 
-    async function handleGeolocation() {
-        if (!('geolocation' in navigator)) return;
-        try {
-            const position = await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject));
-            const { latitude, longitude } = position.coords;
-            const geoResponse = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m`);
-            const geoData = await geoResponse.json();
-            if (geoData.timezone) addClock(geoData.timezone);
-        } catch (error) {
-            console.warn(`Geolocation error: ${error.message}`);
-        }
-    }
-
     function init() {
         initTheme();
         populateSuggestions();
         loadClocks();
         renderClocks();
-        handleGeolocation();
         addClockButton.addEventListener('click', () => { addClock(citySearchInput.value); citySearchInput.value = ''; });
         citySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { addClock(citySearchInput.value); citySearchInput.value = ''; } });
         clockContainer.addEventListener('click', (e) => {
@@ -248,7 +201,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
         clockUpdateInterval = setInterval(updateAllClockDisplays, 1000);
-        setInterval(() => activeClocks.forEach(fetchWeatherForTimezone), 15 * 60 * 1000);
     }
 
     init();
