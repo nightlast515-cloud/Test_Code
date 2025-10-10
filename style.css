@@ -71,6 +71,46 @@ h1 {
     font-weight: 600;
 }
 
+.add-clock-form {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 40px;
+}
+
+#city-search-input {
+    font-size: 1rem;
+    padding: 10px 15px;
+    border: 1px solid var(--text-subtle);
+    border-radius: 8px;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    width: 300px;
+    transition: all 0.3s ease;
+}
+
+#city-search-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 20%, transparent);
+}
+
+#add-clock-button {
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    background-color: var(--accent-color);
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#add-clock-button:hover {
+    background-color: color-mix(in srgb, var(--accent-color) 85%, black);
+}
+
 .clock-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -79,6 +119,7 @@ h1 {
 }
 
 .clock {
+    position: relative; /* For positioning the remove button */
     background-color: var(--clock-bg);
     padding: 20px;
     border-radius: 10px;
@@ -92,6 +133,34 @@ h1 {
 .clock:hover {
     transform: translateY(-8px);
     box-shadow: 0 12px 25px var(--shadow-color-hover);
+}
+
+.remove-clock-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background-color: var(--timezone-bg);
+    color: var(--text-subtle);
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 24px;
+    text-align: center;
+    border-radius: 50%;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+}
+
+.clock:hover .remove-clock-button {
+    opacity: 1;
+}
+
+.remove-clock-button:hover {
+    background-color: var(--accent-color);
+    color: white;
 }
 
 .country-header {

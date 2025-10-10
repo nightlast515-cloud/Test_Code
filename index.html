@@ -15,8 +15,16 @@
             </label>
         </div>
         <h1>World Clock</h1>
+        <div class="add-clock-form">
+            <input type="text" id="city-search-input" list="city-suggestions" placeholder="Enter a city or timezone...">
+            <datalist id="city-suggestions"></datalist>
+            <button id="add-clock-button">Add Clock</button>
+        </div>
         <div id="clock-container" class="clock-container"></div>
     </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
