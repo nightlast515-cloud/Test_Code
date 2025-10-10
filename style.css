@@ -6,6 +6,7 @@ body {
     align-items: center;
     min-height: 100vh;
     margin: 0;
+    padding: 20px 0; /* Add padding for scroll */
 }
 
 .container {
@@ -15,7 +16,7 @@ body {
     border-radius: 15px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     width: 90%;
-    max-width: 1000px;
+    max-width: 1200px; /* Increased max-width */
 }
 
 h1 {
@@ -27,17 +28,20 @@ h1 {
 
 .clock-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 25px;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); /* Adjusted minmax */
+    gap: 30px; /* Increased gap */
     justify-content: center;
 }
 
 .clock {
     background-color: #f9f9f9;
-    padding: 20px;
+    padding: 25px; /* Increased padding */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .clock:hover {
@@ -46,20 +50,24 @@ h1 {
 }
 
 .clock h2 {
-    font-size: 1.4em;
+    font-size: 1.3em; /* Slightly smaller */
     color: #555;
-    margin-bottom: 10px;
+    margin-bottom: 15px; /* Increased margin */
     font-weight: 500;
 }
 
+.analog-clock {
+    margin-bottom: 15px;
+}
+
 .clock .time {
-    font-size: 2em;
+    font-size: 1.6em; /* Adjusted size */
     color: #007BFF;
     font-weight: 600;
-    margin-bottom: 10px;
+    margin-bottom: 8px; /* Adjusted margin */
 }
 
 .clock .date {
-    font-size: 1em;
+    font-size: 0.9em; /* Adjusted size */
     color: #777;
 }
