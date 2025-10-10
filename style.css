@@ -1,0 +1,122 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Align to top */
+    min-height: 100vh;
+    margin: 0;
+    padding: 40px 20px; /* Add top/bottom padding */
+    box-sizing: border-box;
+}
+
+.container {
+    text-align: center;
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    width: 95%;
+    max-width: 1300px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 40px;
+    font-size: 2.8em;
+    font-weight: 600;
+}
+
+.clock-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 35px;
+    justify-content: center;
+}
+
+.clock {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.clock:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.12);
+}
+
+.country-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-bottom: 15px;
+    gap: 10px;
+}
+
+.flag {
+    width: 30px;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.clock h2 {
+    font-size: 1.2em;
+    color: #555;
+    margin: 0;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.day-night-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.day-icon {
+    color: #fdd835; /* Sunny yellow */
+}
+
+.night-icon {
+    color: #455a64; /* Dark blue-gray */
+}
+
+.analog-clock {
+    margin-bottom: 15px;
+}
+
+.clock .time {
+    font-size: 1.8em;
+    color: #007BFF;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.date-tz-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+}
+
+.clock .date {
+    font-size: 0.9em;
+    color: #777;
+}
+
+.clock .timezone {
+    font-size: 0.8em;
+    color: #999;
+    background-color: #e9ecef;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
