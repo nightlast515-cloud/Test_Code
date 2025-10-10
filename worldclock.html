@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Clock</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="worldclock.css">
 </head>
 <body>
     <div class="container">
@@ -19,10 +19,12 @@
             <input type="text" id="city-search-input" list="city-suggestions" placeholder="Enter a city or timezone...">
             <datalist id="city-suggestions"></datalist>
             <button id="add-clock-button">Add Clock</button>
+            <button id="globe-view-button" class="action-button">Globe View</button>
         </div>
         <div class="clock-list-wrapper">
             <div id="clock-container" class="clock-list"></div>
         </div>
+        <div id="globe-container" class="hidden"></div>
     </div>
     <div id="holiday-modal" class="modal-overlay hidden">
         <div class="modal-content">
@@ -33,6 +35,8 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
-    <script src="script.js"></script>
+    <script src="//unpkg.com/three"></script>
+    <script src="//unpkg.com/globe.gl"></script>
+    <script src="worldclock.js"></script>
 </body>
 </html>
