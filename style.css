@@ -165,7 +165,7 @@ h1 {
 
 .country-header {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: auto 1fr auto auto;
     align-items: center;
     justify-content: center;
     width: 100%;
@@ -292,4 +292,51 @@ h1 {
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
     border: 0;
+}
+
+/* Holiday Feature Styles */
+.holiday-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0 5px;
+    opacity: 0.7;
+    transition: opacity 0.3s ease;
+}
+
+.holiday-button:hover {
+    opacity: 1;
+}
+
+.holiday-list-container {
+    width: 100%;
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 10px;
+    text-align: left;
+    transition: all 0.3s ease;
+}
+
+.holiday-list-container.hidden {
+    display: none;
+}
+
+.holiday-list-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.holiday-list-container li {
+    font-size: 0.9em;
+    padding: 5px 0;
+    border-bottom: 1px solid var(--timezone-bg);
+}
+
+.holiday-list-container li:last-child {
+    border-bottom: none;
 }

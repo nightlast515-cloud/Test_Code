@@ -66,6 +66,49 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClocks();
     }
 
+    async function fetchAndDisplayHolidays(timezone) {
+        const timezoneId = timezone.replace(/[^a-zA-Z0-9]/g, '-');
+        const holidayListContainer = document.getElementById(`holiday-list-${timezoneId}`);
+        const countryCode = moment.tz.zone(timezone)?.countries()[0];
+
+        if (!countryCode) {
+            holidayListContainer.innerHTML = '<p>Holiday data not available for this location.</p>';
+            holidayListContainer.classList.toggle('hidden');
+            return;
+        }
+
+        // Toggle visibility if already populated
+        if (holidayListContainer.innerHTML !== '') {
+            holidayListContainer.classList.toggle('hidden');
+            return;
+        }
+
+        try {
+            holidayListContainer.innerHTML = '<p>Loading holidays...</p>';
+            holidayListContainer.classList.remove('hidden');
+
+            const year = new Date().getFullYear();
+            const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/${countryCode}`);
+            const holidays = await response.json();
+
+            if (holidays.length === 0) {
+                holidayListContainer.innerHTML = '<p>No public holidays found for this year.</p>';
+                return;
+            }
+
+            let holidayHTML = '<ul>';
+            holidays.forEach(holiday => {
+                holidayHTML += `<li><strong>${moment(holiday.date).format('MMM D')}:</strong> ${holiday.name}</li>`;
+            });
+            holidayHTML += '</ul>';
+            holidayListContainer.innerHTML = holidayHTML;
+
+        } catch (error) {
+            console.error(`Failed to fetch holidays for ${countryCode}:`, error);
+            holidayListContainer.innerHTML = '<p>Could not load holiday data.</p>';
+        }
+    }
+
     function populateSuggestions() {
         citySuggestions.innerHTML = moment.tz.names().map(tz => `<option value="${tz}"></option>`).join('');
     }
@@ -87,6 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="weather-container" id="weather-${timezoneId}">
                         <span class="weather-icon"></span><span class="weather-temp"></span>
                     </div>
+                    <button class="holiday-button" title="View Holidays">📅</button>
                     <span id="day-night-${timezoneId}" class="day-night-icon"></span>
                 </div>
                 <canvas id="analog-${timezoneId}" class="analog-clock" width="150" height="150"></canvas>
@@ -95,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span id="digital-date-${timezoneId}" class="date"></span>
                     <span id="timezone-${timezoneId}" class="timezone"></span>
                 </div>
+                <div class="holiday-list-container hidden" id="holiday-list-${timezoneId}"></div>
             `;
             clockContainer.appendChild(clockElement);
         });
@@ -196,6 +241,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target.classList.contains('remove-clock-button')) {
                 const clockElement = e.target.closest('.clock');
                 removeClock(clockElement.dataset.timezone);
+            }
+            if (e.target.classList.contains('holiday-button')) {
+                const clockElement = e.target.closest('.clock');
+                fetchAndDisplayHolidays(clockElement.dataset.timezone);
             }
         });
         clockUpdateInterval = setInterval(updateAllClockDisplays, 1000);
