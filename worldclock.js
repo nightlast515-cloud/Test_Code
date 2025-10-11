@@ -5,10 +5,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const citySearchInput = document.getElementById('city-search-input');
     const addClockButton = document.getElementById('add-clock-button');
     const citySuggestions = document.getElementById('city-suggestions');
-    const globeViewButton = document.getElementById('globe-view-button');
-    const globeContainer = document.getElementById('globe-container');
-    const clockListWrapper = document.querySelector('.clock-list-wrapper');
-    let globe;
 
     // --- STATE MANAGEMENT ---
     let activeClocks = [];
@@ -33,41 +29,41 @@ document.addEventListener('DOMContentLoaded', () => {
         activeClocks.push(timezone);
         saveClocks();
         renderClocks();
-        updateGlobeMarkers();
     }
 
     function removeClock(timezone) {
         activeClocks = activeClocks.filter(tz => tz !== timezone);
         saveClocks();
         renderClocks();
-        updateGlobeMarkers();
     }
 
     async function fetchAndDisplayHolidays(timezone) {
+        const timezoneId = timezone.replace(/[^a-zA-Z0-9]/g, '-');
+        const holidayListContainer = document.getElementById(`holiday-list-${timezoneId}`);
         const countryCode = moment.tz.zone(timezone)?.countries()[0];
-        const modal = document.getElementById('holiday-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalBody = document.getElementById('modal-body');
 
         if (!countryCode) {
-            modalTitle.innerText = 'Error';
-            modalBody.innerHTML = '<p>Holiday data not available for this location.</p>';
-            modal.classList.remove('hidden');
+            holidayListContainer.innerHTML = '<p>Holiday data not available for this location.</p>';
+            holidayListContainer.classList.toggle('hidden');
             return;
         }
 
-        modalTitle.innerText = `Public Holidays in ${timezone.split('/')[0].replace(/_/g, ' ')}`;
-        modalBody.innerHTML = '<p>Loading holidays...</p>';
-        modal.classList.remove('hidden');
+        if (holidayListContainer.innerHTML !== '' && !holidayListContainer.classList.contains('hidden')) {
+            holidayListContainer.classList.add('hidden');
+            return;
+        }
 
         try {
+            holidayListContainer.innerHTML = '<p>Loading holidays...</p>';
+            holidayListContainer.classList.remove('hidden');
+
             const year = new Date().getFullYear();
             const apiKey = 'VTjPTMBTunsj3E3JpHAgFGXL5thPX9FV';
             const response = await fetch(`https://calendarific.com/api/v2/holidays?api_key=${apiKey}&country=${countryCode}&year=${year}`);
             const data = await response.json();
 
             if (!data.response || !data.response.holidays || data.response.holidays.length === 0) {
-                modalBody.innerHTML = '<p>No public holidays found for this year.</p>';
+                holidayListContainer.innerHTML = '<p>No public holidays found for this year.</p>';
                 return;
             }
 
@@ -76,11 +72,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 holidayHTML += `<li><strong>${moment(holiday.date.iso).format('MMM D')}:</strong> ${holiday.name}</li>`;
             });
             holidayHTML += '</ul>';
-            modalBody.innerHTML = holidayHTML;
+            holidayListContainer.innerHTML = holidayHTML;
 
         } catch (error) {
             console.error(`Failed to fetch holidays for ${countryCode}:`, error);
-            modalBody.innerHTML = '<p>Could not load holiday data.</p>';
+            holidayListContainer.innerHTML = '<p>Could not load holiday data.</p>';
         }
     }
 
@@ -98,21 +94,20 @@ document.addEventListener('DOMContentLoaded', () => {
             clockElement.className = 'clock';
             clockElement.dataset.timezone = timezone;
             clockElement.innerHTML = `
-                <div class="clock-info">
+                <button class="remove-clock-button" title="Remove Clock">&times;</button>
+                <div class="country-header">
                     <img src="https://flagsapi.com/${countryCode.toUpperCase()}/shiny/32.png" alt="" class="flag">
-                    <div>
-                        <h2 class="city-name">${displayName}</h2>
-                        <p class="country-name">${timezone.split('/')[0].replace(/_/g, ' ')}</p>
-                    </div>
-                </div>
-                <div class="time-details">
-                    <p class="time" id="digital-time-${timezoneId}"></p>
-                    <p class="date" id="digital-date-${timezoneId}"></p>
-                </div>
-                <div class="actions">
+                    <h2>${displayName}</h2>
                     <button class="holiday-button" title="View Holidays">📅</button>
-                    <button class="remove-clock-button" title="Remove Clock">&times;</button>
+                    <span id="day-night-${timezoneId}" class="day-night-icon"></span>
                 </div>
+                <canvas id="analog-${timezoneId}" class="analog-clock" width="150" height="150"></canvas>
+                <div id="digital-time-${timezoneId}" class="time"></div>
+                <div class="date-tz-container">
+                    <span id="digital-date-${timezoneId}" class="date"></span>
+                    <span id="timezone-${timezoneId}" class="timezone"></span>
+                </div>
+                <div class="holiday-list-container hidden" id="holiday-list-${timezoneId}"></div>
             `;
             clockContainer.appendChild(clockElement);
         });
@@ -127,6 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!digitalTimeEl) return;
             digitalTimeEl.innerText = momentDate.format('h:mm:ss A');
             document.getElementById(`digital-date-${timezoneId}`).innerText = momentDate.format('dddd, MMMM D, YYYY');
+            document.getElementById(`timezone-${timezoneId}`).innerText = momentDate.format('z');
+            const localHour = momentDate.hour();
+            const sunIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="day-icon"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>`;
+            const moonIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="night-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>`;
+            document.getElementById(`day-night-${timezoneId}`).innerHTML = (localHour >= 6 && localHour < 18) ? sunIcon : moonIcon;
+            drawAnalogClock(document.getElementById(`analog-${timezoneId}`), momentDate);
         });
     }
 
@@ -182,66 +183,6 @@ document.addEventListener('DOMContentLoaded', () => {
         themeSwitcher.addEventListener('change', () => setTheme(themeSwitcher.checked ? 'dark' : 'light'));
     }
 
-    function initGlobe() {
-        return new Promise(resolve => {
-            globe = Globe()
-                (globeContainer)
-                .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
-                .pointOfView({ altitude: 2.5 }, 5000)
-                .polygonCapColor(() => 'rgba(200, 200, 200, 0.7)')
-                .polygonSideColor(() => 'rgba(255, 255, 255, 0.1)')
-                .polygonStrokeColor(() => '#111')
-                .onGlobeReady(resolve);
-        });
-    }
-
-    async function updateGlobeMarkers() {
-        if (!globe) return;
-
-        const markerData = await Promise.all(activeClocks.map(async (tz) => {
-            try {
-                const cityName = tz.split('/').pop().replace(/_/g, ' ');
-                const geoResponse = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${cityName}&count=1`);
-                const geoData = await geoResponse.json();
-                if (!geoData.results) return null;
-                const { latitude, longitude } = geoData.results[0];
-                return {
-                    lat: latitude,
-                    lng: longitude,
-                    label: `${cityName} (${moment().tz(tz).format('h:mm A')})`,
-                    size: 0.5,
-                    color: 'red'
-                };
-            } catch (error) {
-                console.error(`Could not get coordinates for ${tz}`, error);
-                return null;
-            }
-        }));
-
-        globe.pointsData(markerData.filter(d => d));
-    }
-
-    async function toggleGlobeView() {
-        if (globeContainer.classList.contains('hidden')) {
-            globeContainer.classList.remove('hidden');
-            clockListWrapper.classList.add('hidden');
-            globeViewButton.textContent = 'List View';
-            if (!globe) {
-                try {
-                    await initGlobe();
-                    updateGlobeMarkers();
-                } catch (error) {
-                    console.error("Failed to initialize globe:", error);
-                    globeContainer.innerHTML = '<p class="error-message">Could not load 3D globe. Please ensure your browser supports WebGL.</p>';
-                }
-            }
-        } else {
-            globeContainer.classList.add('hidden');
-            clockListWrapper.classList.remove('hidden');
-            globeViewButton.textContent = 'Globe View';
-        }
-    }
-
     function init() {
         initTheme();
         populateSuggestions();
@@ -250,26 +191,15 @@ document.addEventListener('DOMContentLoaded', () => {
         addClockButton.addEventListener('click', () => { addClock(citySearchInput.value); citySearchInput.value = ''; });
         citySearchInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') { addClock(citySearchInput.value); citySearchInput.value = ''; } });
         clockContainer.addEventListener('click', (e) => {
-            const clockElement = e.target.closest('.clock');
-            if (!clockElement) return;
-
-            if (e.target.closest('.remove-clock-button')) {
+            if (e.target.classList.contains('remove-clock-button')) {
+                const clockElement = e.target.closest('.clock');
                 removeClock(clockElement.dataset.timezone);
             }
-            if (e.target.closest('.holiday-button')) {
+            if (e.target.classList.contains('holiday-button')) {
+                const clockElement = e.target.closest('.clock');
                 fetchAndDisplayHolidays(clockElement.dataset.timezone);
             }
         });
-
-        const holidayModal = document.getElementById('holiday-modal');
-        holidayModal.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay') || e.target.closest('.modal-close-button')) {
-                holidayModal.classList.add('hidden');
-            }
-        });
-
-        globeViewButton.addEventListener('click', toggleGlobeView);
-
         clockUpdateInterval = setInterval(updateAllClockDisplays, 1000);
     }
 

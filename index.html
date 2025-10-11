@@ -19,24 +19,11 @@
             <input type="text" id="city-search-input" list="city-suggestions" placeholder="Enter a city or timezone...">
             <datalist id="city-suggestions"></datalist>
             <button id="add-clock-button">Add Clock</button>
-            <button id="globe-view-button" class="action-button">Globe View</button>
         </div>
-        <div class="clock-list-wrapper">
-            <div id="clock-container" class="clock-list"></div>
-        </div>
-        <div id="globe-container" class="hidden"></div>
-    </div>
-    <div id="holiday-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <button class="modal-close-button" title="Close">&times;</button>
-            <h3 id="modal-title"></h3>
-            <div id="modal-body"></div>
-        </div>
+        <div id="clock-container" class="clock-container"></div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.30.1/moment.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.45/moment-timezone-with-data.min.js"></script>
-    <script src="//unpkg.com/three"></script>
-    <script src="//unpkg.com/globe.gl"></script>
     <script src="worldclock.js"></script>
 </body>
 </html>
