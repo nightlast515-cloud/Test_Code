@@ -19,6 +19,13 @@
             <input type="text" id="city-search-input" list="city-suggestions" placeholder="Enter a city or timezone...">
             <datalist id="city-suggestions"></datalist>
             <button id="add-clock-button">Add Clock</button>
+            <button id="plan-meeting-button" class="action-button">Plan a Meeting</button>
+        </div>
+        <div id="scheduler-panel" class="scheduler-panel hidden">
+            <h3>Select cities to find the best meeting time</h3>
+            <div id="scheduler-clock-list"></div>
+            <button id="find-times-button" class="action-button">Find Good Times</button>
+            <div id="scheduler-results"></div>
         </div>
         <div id="clock-container" class="clock-container"></div>
     </div>
