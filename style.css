@@ -78,7 +78,7 @@ header h1 {
     padding: 20px;
     border-radius: 12px;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
+    grid-template-columns: auto 1fr 2fr 1fr;
     gap: 20px;
     align-items: center;
     box-shadow: 0 4px 15px var(--shadow-color);
@@ -221,7 +221,6 @@ header h1 {
     padding-bottom: 10px;
 }
 
-/* Add a planning-mode class to the clock-item for styling */
 .clock-item.planning-mode {
     grid-template-columns: auto 1fr 2fr 1fr;
 }
