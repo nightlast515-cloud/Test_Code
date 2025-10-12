@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Event Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="app-container">
+        <header>
+            <h1>Global Event Planner</h1>
+            <div class="controls">
+                <input type="text" id="city-input" list="city-suggestions" placeholder="Enter a timezone (e.g., America/New_York)">
+                <datalist id="city-suggestions"></datalist>
+                <button id="add-city-btn">Add City</button>
+                <button id="plan-meeting-btn">Plan a Meeting</button>
+            </div>
+        </header>
+
+        <main id="clock-list">
+            <!-- Clock items will be injected here by JavaScript -->
+        </main>
+
+        <div id="scheduler-container" class="hidden">
+            <h2>Meeting Scheduler</h2>
+            <div id="timeline-container"></div>
+        </div>
+    </div>
+
+    <!-- Holiday Modal -->
+    <div id="holiday-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <button class="modal-close-btn">&times;</button>
+            <h2 id="modal-city-name"></h2>
+            <ul id="holiday-list"></ul>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
